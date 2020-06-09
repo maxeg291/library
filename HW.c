@@ -25,8 +25,8 @@ struct books book[MAX];
 struct students {
     char num[8];
     char name[B];
-    char sname[B];
-    char otch[B];
+    char surname[B];
+    char secname[B];
     char fak[4];
     char napr[N];
 };
@@ -39,38 +39,31 @@ struct users {
     int book; };
 struct users user[MAX];
 
-struct sb { 
+struct student_books { 
      int isbn;
      char num[8];
      char date[12]; };
-struct sb stud[MAX];
+struct student_books stud[MAX];
 
-int BookFileOpen();
-int StudentFileOpen();
-int StudentBooksFileOpen();
-
-int acesslevel(char* login, char* pass, int usercount);
-
+int bookfile();
+int studfile();
+int student_booksfile();
+int accesslevel(char* login, char* pass, int usercount);
 void addstudent(int studcount);
 void delstudent(int studcount, int studbook);
 void addbook(int strcount);
 void delbook(int strcount, int studbook);
-
 void rebackup(int strcount);
 void backup(int strcount);
-
 char* settime(struct tm* u);
 void searchstudent(int studcount);
-
 void booksofstud(int studbook, int strcount, int studcount);
 void studsofbook(int studbook, int strcount, int studcount);
-
 void givebook(int studbook, int strcount, int studcount);
 void takebook(int studbook, int strcount, int studcount);
-int StrInt(char* tmp, char* newtmp);
+int checkdatefunc(char* tmp, char* newtmp);
 
 FILE* file;
-
 
 int main() {
     SetConsoleCP(1251);
@@ -97,7 +90,7 @@ int main() {
     while (flag == 0) {
         printf("Введите логин: "); scanf("%s", login);
         printf("Введите пароль: "); scanf("%s", pass);
-        status = acesslevel(login, pass, usernum);
+        status = accesslevel(login, pass, usernum);
         if (status != 0) {
             flag = 1;
         }
@@ -140,14 +133,11 @@ int main() {
         printf("0.Выход\n");
     }
     while(TRUE) {
-        int strcoun = BookFileOpen();
-        int studcoun = StudentFileOpen();
-        int studbook = StudentBooksFileOpen();
-
+        int strcoun = bookfile();
+        int studcoun = studfile();
+        int studbook = student_booksfile();
         scanf("%d", &choice);
-
-        if (status == 2)
-        {
+        if (status == 2) {
             if (choice == 1)
                 addstudent(studcoun);
             else if (choice == 2)
@@ -184,7 +174,7 @@ int main() {
     return 0;
 }
 
-int acesslevel(char* login, char* pass, int usercount) {
+int accesslevel(char* login, char* pass, int usercount) {
     int flag = 0;
     for (int i = 0; i < usercount; i++) {
         if ((strcmp(login, user[i].login) == 0) && (strcmp(pass, user[i].pass) == 0))
@@ -203,28 +193,31 @@ int acesslevel(char* login, char* pass, int usercount) {
     return flag;
 }
 
-
-int StudentBooksFileOpen() {
-    if ((file = fopen("student_books.csv", "r")) == NULL)
+int studfile()
+{
+    if ((file = fopen("students.csv", "r")) == NULL)
     {
-        printf("Невозможно открыть student_books.csv");
+        printf("Невозможно открыть students.csv");
         exit(0);
     }
     int i;
     for (i = 0; !feof(file); i++)
     {
-        fscanf(file, "%d", &stud[i].isbn);
-        getc(file);
-        fscanf(file, "%[^;]%*c", stud[i].num);
-        fscanf(file, "%[^'\n']%*c", stud[i].date);
+        fscanf(file, "%[^;]%*c", student[i].num);
+        fscanf(file, "%[^;]%*c", student[i].surname);
+        fscanf(file, "%[^;]%*c", student[i].name);
+        fscanf(file, "%[^;]%*c", student[i].secname);
+        fscanf(file, "%[^;]%*c", student[i].fak);
+        fscanf(file, "%[^'\n']%*c", student[i].napr);
+
     }
     fclose(file);
     return i;
 }
 
-int BookFileOpen()
+int bookfile()
 {
-    if ((file = fopen("books.csv", "r")) == NULL){
+    if ((file = fopen("books.csv", "r")) == NULL) {
         printf("Can't open books.csv");
         exit(0);
     }
@@ -239,6 +232,24 @@ int BookFileOpen()
         getc(file);
         fscanf(file, "%d", &book[i].av);
         getc(file);
+    }
+    fclose(file);
+    return i;
+}
+
+int student_booksfile() {
+    if ((file = fopen("student_books.csv", "r")) == NULL)
+    {
+        printf("Невозможно открыть student_books.csv");
+        exit(0);
+    }
+    int i;
+    for (i = 0; !feof(file); i++)
+    {
+        fscanf(file, "%d", &stud[i].isbn);
+        getc(file);
+        fscanf(file, "%[^;]%*c", stud[i].num);
+        fscanf(file, "%[^'\n']%*c", stud[i].date);
     }
     fclose(file);
     return i;
@@ -345,29 +356,6 @@ void delbook(int strcount, int studbook)
     {
         printf("\nНельзя удалять книги, находящиеся у студентов\n");
     }
-}
-
-
-int StudentFileOpen()
-{
-    if ((file = fopen("students.csv", "r")) == NULL)
-    {
-        printf("Невозможно открыть students.csv");
-        exit(0);
-    }
-    int i;
-    for (i = 0; !feof(file); i++)
-    {
-        fscanf(file, "%[^;]%*c", student[i].num);
-        fscanf(file, "%[^;]%*c", student[i].sname);
-        fscanf(file, "%[^;]%*c", student[i].name);
-        fscanf(file, "%[^;]%*c", student[i].otch);
-        fscanf(file, "%[^;]%*c", student[i].fak);
-        fscanf(file, "%[^'\n']%*c", student[i].napr);
-
-    }
-    fclose(file);
-    return i;
 }
 
 void addstudent(int studcount)
@@ -503,12 +491,12 @@ void searchstudent(int studcount)
 
     for (int i = 0; i < studcount; i++)
     {
-        if (strcmp(surname, student[i].sname) == 0)
+        if (strcmp(surname, student[i].surname) == 0)
         {
             printf("Зачетка %s \t ", student[i].num);
-            printf("Фамилия: %s \t", student[i].sname);
+            printf("Фамилия: %s \t", student[i].surname);
             printf("Имя: %s \t", student[i].name);
-            printf("Отчество: %s \t", student[i].otch);
+            printf("Отчество: %s \t", student[i].secname);
             printf("Факультет: %s\t", student[i].fak);
             printf("Направление: %s\n", student[i].napr);
         }
@@ -529,19 +517,15 @@ char* settime(struct tm* u)
     free(s);
 }
 
-
 void backup(int strcount) {
     struct tm* u;
     char* stri;
     const time_t timer = time(NULL);
     u = localtime(&timer);
     stri = settime(u);
-
     char* a = 0;
     char name[31];
-
-    if ((file = fopen("students.csv", "r")) == NULL)
-    {
+    if ((file = fopen("students.csv", "r")) == NULL) {
         printf("Невозможно открыть students.csv");
         exit(0);
     }
@@ -555,21 +539,15 @@ void backup(int strcount) {
     name[22] = '.'; name[25] = '.'; name[26] = 'c'; name[27] = 's'; name[28] = 'v'; name[29] = '\0';
 
     int i;
-    for (i = 0; !feof(file); i++)
-    {
+    for (i = 0; !feof(file); i++) {
         a[i] = getc(file);
     }
     a[i - 1] = '\0';
-
     file = fopen(name, "w");
-
     for (i = 0; (a[i] != '\0'); i++)
         fprintf(file, "%c", a[i]);
-
     fclose(file);
-
-    if ((file = fopen(name, "r")) != NULL)
-    {
+    if ((file = fopen(name, "r")) != NULL) {
         printf("Success\n");
         printf("Создан %s", name);
     }
@@ -633,7 +611,7 @@ void booksofstud(int studbook, int strcount, int studcount) {
             t = 1;
     }
     if (t == 1) {
-        for (int i = 0; i < studbook; i++){
+        for (int i = 0; i < studbook; i++) {
             if (strcmp(num, stud[i].num) == 0) {
                 f = true;
                 printf("Дата сдачи: %s \n ", stud[i].date);
@@ -658,7 +636,6 @@ void booksofstud(int studbook, int strcount, int studcount) {
     }
 }
 
-
 void studsofbook(int studbook, int strcount, int studcount) {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
@@ -669,8 +646,7 @@ void studsofbook(int studbook, int strcount, int studcount) {
         exit(0);
     }
     fclose(file);
-    if ((file = fopen("student_books.csv", "r")) == NULL)
-    {
+    if ((file = fopen("student_books.csv", "r")) == NULL) {
         printf("Невозможно открыть student_books.csv");
         exit(0);
     };
@@ -678,33 +654,23 @@ void studsofbook(int studbook, int strcount, int studcount) {
     int isbn;
     int t = 0;
     int f = 0;
-
     printf("Введите ISBN искомой книги:");
     scanf("%lld", &isbn);
-
-    for (int i = 0; i < strcount; i++)
-    {
+    for (int i = 0; i < strcount; i++) {
         if (isbn == book[i].isbn)
             t = 1;
     }
-
-    if (t == 1)
-    {
-        for (int j = 0; j < studbook; j++)
-        {
-            if (isbn == stud[j].isbn)
-            {
+    if (t == 1) {
+        for (int j = 0; j < studbook; j++) {
+            if (isbn == stud[j].isbn) {
                 f = 1;
                 printf("\nДата сдачи: %s\n", stud[j].date);
-
-                for (int i = 0; i < studcount; i++)
-                {
-                    if (strcmp(stud[j].num, student[i].num) == 0)
-                    {
+                for (int i = 0; i < studcount; i++) {
+                    if (strcmp(stud[j].num, student[i].num) == 0) {
                         printf("Зачетка: %s \t ", student[i].num);
-                        printf("Фамилия: %s \t", student[i].sname);
+                        printf("Фамилия: %s \t", student[i].surname);
                         printf("Имя: %s \t", student[i].name);
-                        printf("Отчество: %s \t", student[i].otch);
+                        printf("Отчество: %s \t", student[i].secname);
                         printf("Факультет: %s\t", student[i].fak);
                         printf("Направление: %s\n", student[i].napr);
                     }
@@ -730,7 +696,6 @@ void givebook(int studbook, int strcount, int studcount) {
     int checkstudent = 0;
     int i;
     int checkdate;
-
     printf("ISBN книги для выдачи: ");
     scanf("%d", &isbn);
     if ((file = fopen("books.csv", "r")) == NULL)
@@ -764,7 +729,7 @@ void givebook(int studbook, int strcount, int studcount) {
                 i++;
             }
             if ((isbn == stud[i].isbn) && (dat == true)) {
-                checkdate = StrInt(stud[i].date, date);
+                checkdate = checkdatefunc(stud[i].date, date);
                 if (checkdate == 2)
                     date = stud[i].date;
             }
@@ -772,28 +737,21 @@ void givebook(int studbook, int strcount, int studcount) {
         checkstudent = 1;
         printf("Экземпляр появится: %s\n", date);
     }
-    if (checkbook == 2)
-    {
+    if (checkbook == 2) {
         printf("Номер зачётки: ");
         scanf("%s", num);
-
-        if ((file = fopen("students.csv", "r")) == NULL)
-        {
+        if ((file = fopen("students.csv", "r")) == NULL) {
             printf("Невозможно открыть students.csv");
             exit(0);
         }
-        for (i = 0; i < studcount; i++)
-        {
-            if (strcmp(num, student[i].num) == 0)
-            {
+        for (i = 0; i < studcount; i++) {
+            if (strcmp(num, student[i].num) == 0) {
                 checkstudent = 2;
             }
         }
         fclose(file);
     }
-    
-    if ((checkstudent == 2) && (checkbook == 2))
-    {
+    if ((checkstudent == 2) && (checkbook == 2)) {
         for (int i = 0; i < strcount; i++) {
             if (isbn == book[i].isbn)
                 book[i].av--;
@@ -810,9 +768,7 @@ void givebook(int studbook, int strcount, int studcount) {
                 fprintf(file, "%d\n", book[i].av);
         }
         fclose(file);
-
         file = fopen("student_books.csv", "a");
-
         struct tm* u;
         char* stri;
         time_t timer = time(NULL);
@@ -820,8 +776,7 @@ void givebook(int studbook, int strcount, int studcount) {
         u = localtime(&timer);
         stri = settime(u);
         char givedate[11];
-        for (i = 0; i < 10; i++)
-        {
+        for (i = 0; i < 10; i++) {
             givedate[i] = stri[i];
         }
         givedate[10] = '\0';
@@ -833,56 +788,45 @@ void givebook(int studbook, int strcount, int studcount) {
     }
 }
 
-int StrInt(char* newtmp, char* tmp)
+int checkdatefunc(char* newdate, char* olddate)
 {
-    int day = 0, month = 0, year = 0, nday = 0, nmonth = 0, nyear = 0;
-    day = (tmp[0] - '0') * 10;
-    day += (tmp[1] - '0');
-    month = (tmp[3] - '0') * 10;
-    month += (tmp[4] - '0');
-
-    year = (tmp[6] - '0') * 10;
-    year += (tmp[7] - '0');
-    year *= 10;
-    year += (tmp[8] - '0');
-    year *= 10;
-    year += (tmp[9] - '0');
-
-    nday = (newtmp[0] - '0') * 10;
-    nday += (newtmp[1] - '0');
-
-    nmonth = (newtmp[3] - '0') * 10;
-    nmonth += (newtmp[4] - '0');
-
-    nyear = (newtmp[6] - '0') * 10;
-    nyear += (newtmp[7] - '0');
-    nyear *= 10;
-    nyear += (newtmp[8] - '0');
-    nyear *= 10;
-    nyear += (newtmp[9] - '0');
-
-    if (nyear == year)
-    {
-        if (nmonth == month)
-        {
-            if (nday == day)
-            {
+    int oldday = 0, oldmonth = 0, oldyear = 0, newday = 0, newmonth = 0, newyear = 0;
+    oldday = (olddate[0] - '0') * 10;
+    oldday += (olddate[1] - '0');
+    oldmonth = (olddate[3] - '0') * 10;
+    oldmonth += (olddate[4] - '0');
+    oldyear = (olddate[6] - '0') * 10;
+    oldyear += (olddate[7] - '0');
+    oldyear *= 10;
+    oldyear += (olddate[8] - '0');
+    oldyear *= 10;
+    oldyear += (olddate[9] - '0');
+    newday = (newdate[0] - '0') * 10;
+    newday += (newdate[1] - '0');
+    newmonth = (newdate[3] - '0') * 10;
+    newmonth += (newdate[4] - '0');
+    newyear = (newdate[6] - '0') * 10;
+    newyear += (newdate[7] - '0');
+    newyear *= 10;
+    newyear += (newdate[8] - '0');
+    newyear *= 10;
+    newyear += (newdate[9] - '0');
+    if (newyear == oldyear) {
+        if (newmonth == oldmonth) {
+            if (newday == oldday) {
                 return 1;
             }
-            if (nday < day)
-            {
+            if (newday < oldday) {
                 return 2;
             }
             else return 3;
         }
-        if (nmonth < month)
-        {
+        if (newmonth < oldmonth) {
             return 2;
         }
         else return 3;
     }
-    if (nyear < year)
-    {
+    if (newyear < oldyear) {
         return 2;
     }
     else return 3;
@@ -892,13 +836,12 @@ void takebook(int studbook, int strcount, int studcount) {
     SetConsoleOutputCP(1251);
     setlocale(LC_ALL, "rus");
     int isbn;
-    char num[8];
+    char num[10];
     int checkbook = 0;
-    bool dat = false;
     int checkstudent = 0;
-    int i;
     int checkdate;
-    int w = 0;
+    int i;
+    int x = 0;
 
     printf("ISBN книги для приема: ");
     scanf("%d", &isbn);
@@ -951,7 +894,7 @@ void takebook(int studbook, int strcount, int studcount) {
             printf("Невозможно открыть student_books.csv");
             exit(0);
         }
-        char* a = (char*)malloc(studbook * (sizeof(struct sb)));
+        char* a = (char*)malloc(studbook * (sizeof(struct student_books)));
         for (int y = 0; y < studbook; y++){
             if ((strcmp(num, stud[y].num) == 0) && (isbn == stud[y].isbn)){
                 while ((getc(file) != '\n') && (!feof(file))) {
@@ -959,23 +902,23 @@ void takebook(int studbook, int strcount, int studcount) {
                 }
             }
             else {
-                a[w] = getc(file);
-                while ((a[w] != '\n') && (!feof(file))) {
-                    w++;
-                    a[w] = getc(file);
+                a[x] = getc(file);
+                while ((a[x] != '\n') && (!feof(file))) {
+                    x++;
+                    a[x] = getc(file);
                 }
-                a[w] = '\n'; w++;
+                a[x] = '\n'; x++;
             }
         }
-        a[w - 1] = '\0';
+        a[x - 1] = '\0';
         fclose(file);
         file = fopen("student_books.csv", "w");
-        for (int n = 0; a[n] != '\0'; n++) {
-            fprintf(file, "%c", a[n]);
+        for (i = 0; a[i] != '\0'; i++) {
+            fprintf(file, "%c", a[i]);
         }
         fclose(file);
         file = fopen("books.csv", "w");
-        for (int i = 0; i < strcount; i++) {
+        for (i = 0; i < strcount; i++) {
             fprintf(file, "%d;", book[i].isbn);
             fprintf(file, "%s;", book[i].author);
             fprintf(file, "%s;", book[i].title);
